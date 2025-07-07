@@ -55,7 +55,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 `telegram.ext`: Tools to build the bot, add handlers, and manage context.
 
-`apscheduler`: Schedules the daily messages (runs them at 6AM UTC).
+`apscheduler`: Schedules the daily messages (runs them at 6AM EDT).
 
 ### 2. File Paths
 ```
