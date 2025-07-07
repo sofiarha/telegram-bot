@@ -77,7 +77,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Blessed art thou, for you are now bound to the daily revelations of the Young-Girl. At the hour of first light, her scripture shall find you.")
 
 async def main():
-    app = ApplicationBuilder().token("8091306656:AAHY9OmXCdBYMRNQmLLGK4VI2wFlJCuEY0A").build()
+    app = ApplicationBuilder().token("TOKEN").build()
     app.add_handler(CommandHandler("start", start))
 
     scheduler = AsyncIOScheduler(timezone="EDT")
