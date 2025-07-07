@@ -163,7 +163,8 @@ Updates the index, wrapping to 0 when reaching the end of the message list.
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     save_chat_id(chat_id)
-    await update.message.reply_text("Hello! You’re now subscribed to daily messages.")
+    await update.message.reply_text("Blessed art thou, for you are now bound to the daily revelations of the Young-Girl.
+    At the hour of first light, her scripture shall find you.")
 ```
 When a user sends `/start`, saves their `chat_id` and sends a welcome message.
 
