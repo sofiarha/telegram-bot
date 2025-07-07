@@ -1,8 +1,39 @@
 # Telegram Bot
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+A Telegram bot that sends daily devotional-style messages inspired by Tiqqun’s Preliminary Materials for the Theory of the Young-Girl. Instead of hardcoding the sayings, the bot will load them from a CSV file, allowing easy updates without changing the code. The tutorial covers: (1) setting up a Telegram bot and obtaining a bot token, (2) preparing a CSV file with sayings, (3) writing a Python script to randomly select and send a message to users. By the end, participants will have a flexible Telegram bot that delivers thematic content and a clear understanding of integrating external data into bot development.
 
-## 1. Import
+## Prep:
+### 1. Telegram
+Open Telegram, find `@BotFather`. Start a chat and send the command `/newbot`. BotFather will then ask:
+ - A name for your bot (anything you want).
+ - A username ending in `bot` (mine being @Young-Girl-Bot).
+
+When done, BotFather gives you:
+
+A Bot Token / API key (looks like `123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11`).
+
+### 2. Python & `.venv`
+**Create venv**
+`python3 -m venv .venv`
+
+Keeps bot's dependencies clean.
+
+**Activate `.venv`**
+
+`source .venv/bin/activate`
+
+**Install Python Libraries**
+
+`pip install python-telegram-bot[ext] apscheduler`
+
+`python-telegram-bot`: the main library for Telegram bots.
+
+`[ext]`: enables async support & extras.
+
+`apscheduler`: lets you schedule tasks like daily messages.
+
+## Building the Bot:
+### 1. Import
 ```
 import csv
 import json
@@ -26,7 +57,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 `apscheduler`: Schedules the daily messages (runs them at 6AM UTC).
 
-## 2. File Paths
+### 2. File Paths
 ```
 CSV_FILE = "gospel.csv"
 CHAT_IDS_FILE = "chat_ids.txt"
@@ -40,11 +71,11 @@ Defines file names used by the bot:
 
 `INDEX_FILE`: Saves which message was sent last, so the bot knows where to continue.
 
-## 3. Load Messages from CSV
+### 3. Load Messages from CSV
 ```
 def load_messages(csv_file):
     messages = []
-    with open(csv_file, newline="", encoding="utf-8") as f:
+    with open(csv_file, newline="", encoding="edt-8") as f:
         reader = csv.DictReader(f)
 ```
 Opens `gospel.csv`, reads it as a list of dictionaries (each row is `{message: "..."}`).
@@ -61,9 +92,9 @@ return messages
 ```
 Print all loaded messages for debugging, then return them.
 
-## 4. Save & Load Chat IDs
+### 4. Save & Load Chat IDs
 
-### Save New Chat IDs
+**Save New Chat IDs**
 ```
 def save_chat_id(chat_id):
     if not os.path.exists(CHAT_IDS_FILE):
@@ -84,7 +115,7 @@ if str(chat_id) not in ids:
 ```
 Add the new `chat_id` if not already saved.
 
-### Load All Chat IDs
+**Load All Chat IDs**
 ```
 def load_chat_ids():
     if not os.path.exists(CHAT_IDS_FILE):
@@ -94,8 +125,8 @@ with open(CHAT_IDS_FILE, "r") as f:
 ```
 Return an empty list if no IDs file exists. Otherwise, return all stored chat IDs as a list.
 
-## 5. Save & Load Last Sent Message Index
-### Load Index
+### 5. Save & Load Last Sent Message Index
+**Load Index**
 ```
 def load_last_index():
     if os.path.exists(INDEX_FILE):
@@ -106,7 +137,7 @@ def load_last_index():
 ```
 Reads `last_index.json`. Returns saved index or 0 if file doesn’t exist.
 
-### Save Index
+**Save Index**
 ```
 def save_last_index(index):
     with open(INDEX_FILE, "w") as f:
@@ -114,14 +145,14 @@ def save_last_index(index):
 ```
 Saves the current index to `last_index.json`.
 
-### Global Varieties
+**Global Varieties**
 ```
 messages = load_messages(CSV_FILE)
 current_index = load_last_index()
 ```
 Loads all messages and remembers where it left off.
 
-## 6. Send Daily Verses
+### 6. Send Daily Verses
 ```
 async def send_daily_message(context: ContextTypes.DEFAULT_TYPE):
     global current_index
@@ -157,7 +188,7 @@ save_last_index(current_index)
 ```
 Updates the index, wrapping to 0 when reaching the end of the message list.
 
-## 7. Handle `/start` Command
+### 7. Handle `/start` Command
 
 ```
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -168,23 +199,22 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 ```
 When a user sends `/start`, saves their `chat_id` and sends a welcome message.
 
-## 8. Main Function
+### 8. Main Function
 ```
 async def main():
     app = ApplicationBuilder().token("YOUR_BOT_TOKEN").build()
     app.add_handler(CommandHandler("start", start))
 ```
-Creates the Telegram bot and adds a handler for `/start`.
+Connects the Telegram bot and adds a handler for `/start`.
 
 ```
-scheduler = AsyncIOScheduler(timezone="UTC")
-scheduler.add_job(send_daily_message, "cron", hour=6, minute=0, args=[app])
-scheduler.start()
+scheduler = AsyncIOScheduler(timezone="EDT")
+scheduler.add_job(lambda: send_daily_message(app.bot), "cron", hour=6, minute=0)
 ```
-Schedules `send_daily_message` to run every day at 6AM UTC.
+Schedules `send_daily_message` to run every day at 6AM EDT.
 
 ```
-print("Bot is running and will send daily messages at 6AM UTC.")
+print("Bot is running and will send daily revelations at 6AM EDT.")
 await send_daily_message(app)
 ```
 Sends a message immediately on startup as a test.
@@ -194,7 +224,7 @@ await app.run_polling()
 ```
 Starts polling Telegram for incoming updates (listens for `/start`).
 
-## 9. Run Bot
+### 9. Run Bot
 ```
 if __name__ == "__main__":
     try:
